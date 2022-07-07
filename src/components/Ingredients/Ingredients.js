@@ -27,9 +27,13 @@ const Ingredients = () => {
   }
 
   const removeIngredientHandler = ingredientId => {
-      setUserIngredients(prevIngredients =>
-          prevIngredients.filter((ingredient) => ingredient.id !== ingredientId)
-      );
+      fetch(`https://react-prep-b4fd7-default-rtdb.firebaseio.com/ingredient/${ingredientId}.json`,{
+          method: 'DELETE'
+      }).then(response => {
+          setUserIngredients(prevIngredients =>
+              prevIngredients.filter((ingredient) => ingredient.id !== ingredientId)
+          );
+      });
   }
 
   const filteredIngredientsHandler = useCallback((filteredIngredients) => {
