@@ -3,10 +3,12 @@ import React, {useCallback, useEffect, useState} from 'react';
 import IngredientForm from './IngredientForm';
 import Search from './Search';
 import IngredientList from "./IngredientList";
+import ErrorModal from "../UI/ErrorModal";
 
 const Ingredients = () => {
   const [userIngredients, setUserIngredients] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState();
 
   const addIngredientHandler = ingredient => {
       setIsLoading(true);
@@ -31,13 +33,17 @@ const Ingredients = () => {
 
   const removeIngredientHandler = ingredientId => {
       setIsLoading(true);
-      fetch(`https://react-prep-b4fd7-default-rtdb.firebaseio.com/ingredient/${ingredientId}.json`,{
+      fetch(`https://react-prep-b4fd7-default-rtdb.firebaseio.com/ingredient/${ingredientId}.jso`,{
           method: 'DELETE'
       }).then(response => {
           setIsLoading(false);
           setUserIngredients(prevIngredients =>
               prevIngredients.filter((ingredient) => ingredient.id !== ingredientId)
           );
+      }).catch(error => {
+          // setError('Something went wrong!');
+          setError(error.message);
+          setIsLoading(false);
       });
   }
 
@@ -45,8 +51,13 @@ const Ingredients = () => {
         setUserIngredients(filteredIngredients);
   }, []);
 
+  const clearError = () => {
+      setError(null);
+  }
+
   return (
     <div className="App">
+        {error && <ErrorModal onClose={clearError}>{error}</ErrorModal>}
       <IngredientForm onAddIngredient={addIngredientHandler} loading={isLoading}/>
 
       <section>
