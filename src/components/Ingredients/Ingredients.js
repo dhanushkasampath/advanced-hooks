@@ -1,4 +1,4 @@
-import React, {useCallback, useReducer} from 'react';
+import React, {useCallback, useMemo, useReducer} from 'react';
 
 import IngredientForm from './IngredientForm';
 import Search from './Search';
@@ -48,7 +48,7 @@ const Ingredients = () => {
 
   const [httpState, myHttpDispatch] = useReducer(httpReducer, { loading: false, error: null });
 
-  const addIngredientHandler = ingredient => {
+  const addIngredientHandler = useCallback(ingredient => {
       // setIsLoading(true);
       myHttpDispatch({type: 'SEND'});//here only type is needed. action no need as not used in this switch case
       //fetch returns a promise. the function inside the then execute only when fetch function successfully completed
@@ -74,9 +74,9 @@ const Ingredients = () => {
               ingredients: { id: responseData.name, ...ingredient}
           })
       });
-  }
+  }, []);
 
-  const removeIngredientHandler = ingredientId => {
+  const removeIngredientHandler = useCallback(ingredientId => {
       // setIsLoading(true);
       myHttpDispatch({type: 'SEND'});
       fetch(`https://react-prep-b4fd7-default-rtdb.firebaseio.com/ingredient/${ingredientId}.json`,{
@@ -97,7 +97,7 @@ const Ingredients = () => {
           // setIsLoading(false);
           myHttpDispatch({type: 'ERROR', errorMessage: 'Something went wrong!'});
       });
-  }
+  }, []);
 
   const filteredIngredientsHandler = useCallback((filteredIngredients) => {
         // setUserIngredients(filteredIngredients);
@@ -105,9 +105,19 @@ const Ingredients = () => {
       // in reducer
   }, []);
 
-  const clearError = () => {
+  const clearError = useCallback(() => {
       myHttpDispatch({type: 'CLEAR'});
-  }
+  }, []);//wrapped the function in between useCallback is to prevent unnecessary rendering
+
+  const ingredientList = useMemo(() => {
+      return (
+          <IngredientList
+              ingredients={userIngredients}
+              onRemoveItem={removeIngredientHandler}
+          />
+      );
+  }, [userIngredients, removeIngredientHandler()]);//these dependencies tells the react when should the component
+    // re-render
 
   return (
     <div className="App">
@@ -116,7 +126,7 @@ const Ingredients = () => {
 
       <section>
         <Search onLoadIngredients={filteredIngredientsHandler}/>
-        <IngredientList ingredients={userIngredients} onRemoveItem={removeIngredientHandler}/>
+          {ingredientList}
       </section>
     </div>
   );
